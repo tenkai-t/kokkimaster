@@ -119,7 +119,7 @@ border-radius:10px;
 
 <body>
 
-<h1>国旗マスター</h1>
+<h1 onclick="titleTap()">国旗マスター</h1>
 
 <div id="timer">0.0 秒</div>
 
@@ -157,6 +157,8 @@ border-radius:10px;
 
 <script>
 
+let titleTapCount = 0
+  
 const countries=[
 
 {code:"af",name:"アフガニスタン"},
@@ -639,27 +641,32 @@ showRanking(gameMode)
 
 let tCount=0
 
-document.addEventListener("keydown",function(e){
+function titleTap(){
 
-if(e.key==="t"){
+titleTapCount++
 
-tCount++
+if(titleTapCount>=5){
 
-if(tCount>=5){
+let pass = prompt("パスワードを入力してください")
+
+if(pass==="teacher"){
 
 document.getElementById("teacher").style.display="block"
 
-}
-
 }else{
 
-tCount=0
+alert("パスワードが違います")
 
 }
 
-})
+titleTapCount=0
+
+}
+
+}
 
 </script>
 
 </body>
+
 </html>
