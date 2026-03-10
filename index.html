@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>国旗マスター</title>
+
+<style>
+
+body{
+
+font-family:sans-serif;
+text-align:center;
+background:linear-gradient(#e8f4ff,#ffffff);
+margin:0;
+padding:20px;
+
+}
+
+h1{
+font-size:40px;
+}
+
+#timer{
+
+font-size:48px;
+font-weight:bold;
+color:#ff3b3b;
+margin:10px;
+
+}
+
+#flag{
+
+width:280px;
+margin:15px auto;
+display:block;
+border:2px solid #ccc;
+
+}
+
+/* クイズボタン */
+
+#choices{
+
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+max-width:400px;
+margin:auto;
+
+}
+
+#choices button{
+
+font-size:20px;
+padding:15px;
+border-radius:10px;
+border:none;
+background:#4da6ff;
+color:white;
+cursor:pointer;
+
+}
+
+#choices button:hover{
+
+background:#2f8cff;
+
+}
+
+/* モードボタン */
+
+#modeGrid{
+
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+max-width:450px;
+margin:20px auto;
+
+}
+
+#modeGrid button{
+
+font-size:18px;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#444;
+color:white;
+cursor:pointer;
+
+}
+
+#modeGrid button:hover{
+
+background:#222;
+
+}
+
+/* ランキング */
+
+#ranking{
+
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:5px;
+max-width:500px;
+margin:auto;
+text-align:left;
+background:white;
+padding:10px;
+border-radius:10px;
+
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>国旗マスター</h1>
+
+<div id="timer">0.0 秒</div>
+
+<img id="flag">
+
+<div id="choices"></div>
+
+<div id="result"></div>
+
+<div id="score"></div>
+
+<h2>🎮 モード選択</h2>
+
+<div id="modeGrid">
+
+<button onclick="startGame('10')">🎲10問</button>
+<button onclick="startGame('all')">🌍全世界</button>
+
+<button onclick="startGame('lv1')">⭐Lv1</button>
+<button onclick="startGame('lv2')">⭐⭐Lv2</button>
+<button onclick="startGame('lv3')">⭐⭐⭐Lv3</button>
+<button onclick="startGame('lv4')">⭐⭐⭐⭐Lv4</button>
+<button onclick="startGame('lv5')">⭐⭐⭐⭐⭐Lv5</button>
+
+</div>
+
+<div id="rankingBox">
+<h2 id="rankingTitle">ランキング</h2>
+<div id="ranking"></div>
+</div>
+
+<div id="teacher" style="display:none;">
+<button onclick="resetRanking()">ランキングリセット</button>
+</div>
+
+<script>
+
+const countries=[
+
+{code:"af",name:"アフガニスタン"},
+{code:"al",name:"アルバニア"},
+{code:"dz",name:"アルジェリア"},
+{code:"ad",name:"アンドラ"},
+{code:"ao",name:"アンゴラ"},
+{code:"ag",name:"アンティグア・バーブーダ"},
+{code:"ar",name:"アルゼンチン"},
+{code:"am",name:"アルメニア"},
+{code:"au",name:"オーストラリア"},
+{code:"at",name:"オーストリア"},
+{code:"az",name:"アゼルバイジャン"},
+{code:"bs",name:"バハマ"},
+{code:"bh",name:"バーレーン"},
+{code:"bd",name:"バングラデシュ"},
+{code:"bb",name:"バルバドス"},
+{code:"by",name:"ベラルーシ"},
+{code:"be",name:"ベルギー"},
+{code:"bz",name:"ベリーズ"},
+{code:"bj",name:"ベナン"},
+{code:"bt",name:"ブータン"},
+{code:"bo",name:"ボリビア"},
+{code:"ba",name:"ボスニア・ヘルツェゴビナ"},
+{code:"bw",name:"ボツワナ"},
+{code:"bn",name:"ブルネイ"},
+{code:"bg",name:"ブルガリア"},
+{code:"bf",name:"ブルキナファソ"},
+{code:"bi",name:"ブルンジ"},
+{code:"kh",name:"カンボジア"},
+{code:"cm",name:"カメルーン"},
+{code:"cv",name:"カーボベルデ"},
+{code:"cf",name:"中央アフリカ"},
+{code:"td",name:"チャド"},
+{code:"cl",name:"チリ"},
+{code:"co",name:"コロンビア"},
+{code:"km",name:"コモロ"},
+{code:"cg",name:"コンゴ共和国"},
+{code:"cd",name:"コンゴ民主共和国"},
+{code:"cr",name:"コスタリカ"},
+{code:"ci",name:"コートジボワール"},
+{code:"hr",name:"クロアチア"},
+{code:"cu",name:"キューバ"},
+{code:"cy",name:"キプロス"},
+{code:"cz",name:"チェコ"},
+{code:"dk",name:"デンマーク"},
+{code:"dj",name:"ジブチ"},
+{code:"dm",name:"ドミニカ国"},
+{code:"do",name:"ドミニカ共和国"},
+{code:"ec",name:"エクアドル"},
+{code:"eg",name:"エジプト"},
+{code:"sv",name:"エルサルバドル"},
+{code:"gq",name:"赤道ギニア"},
+{code:"er",name:"エリトリア"},
+{code:"ee",name:"エストニア"},
+{code:"sz",name:"エスワティニ"},
+{code:"et",name:"エチオピア"},
+{code:"fj",name:"フィジー"},
+{code:"fi",name:"フィンランド"},
+{code:"ga",name:"ガボン"},
+{code:"gm",name:"ガンビア"},
+{code:"ge",name:"ジョージア"},
+{code:"gh",name:"ガーナ"},
+{code:"gr",name:"ギリシャ"},
+{code:"gd",name:"グレナダ"},
+{code:"gt",name:"グアテマラ"},
+{code:"gn",name:"ギニア"},
+{code:"gw",name:"ギニアビサウ"},
+{code:"gy",name:"ガイアナ"},
+{code:"ht",name:"ハイチ"},
+{code:"hn",name:"ホンジュラス"},
+{code:"hu",name:"ハンガリー"},
+{code:"is",name:"アイスランド"},
+{code:"in",name:"インド"},
+{code:"id",name:"インドネシア"},
+{code:"ir",name:"イラン"},
+{code:"iq",name:"イラク"},
+{code:"ie",name:"アイルランド"},
+{code:"il",name:"イスラエル"},
+{code:"jm",name:"ジャマイカ"},
+{code:"jo",name:"ヨルダン"},
+{code:"kz",name:"カザフスタン"},
+{code:"ke",name:"ケニア"},
+{code:"ki",name:"キリバス"},
+{code:"kw",name:"クウェート"},
+{code:"kg",name:"キルギス"},
+{code:"la",name:"ラオス"},
+{code:"lv",name:"ラトビア"},
+{code:"lb",name:"レバノン"},
+{code:"ls",name:"レソト"},
+{code:"lr",name:"リベリア"},
+{code:"ly",name:"リビア"},
+{code:"li",name:"リヒテンシュタイン"},
+{code:"lt",name:"リトアニア"},
+{code:"lu",name:"ルクセンブルク"},
+{code:"mg",name:"マダガスカル"},
+{code:"mw",name:"マラウイ"},
+{code:"my",name:"マレーシア"},
+{code:"mv",name:"モルディブ"},
+{code:"ml",name:"マリ"},
+{code:"mt",name:"マルタ"},
+{code:"mh",name:"マーシャル"},
+{code:"mr",name:"モーリタニア"},
+{code:"mu",name:"モーリシャス"},
+{code:"mx",name:"メキシコ"},
+{code:"fm",name:"ミクロネシア"},
+{code:"md",name:"モルドバ"},
+{code:"mc",name:"モナコ"},
+{code:"mn",name:"モンゴル"},
+{code:"me",name:"モンテネグロ"},
+{code:"ma",name:"モロッコ"},
+{code:"mz",name:"モザンビーク"},
+{code:"mm",name:"ミャンマー"},
+{code:"na",name:"ナミビア"},
+{code:"nr",name:"ナウル"},
+{code:"np",name:"ネパール"},
+{code:"nl",name:"オランダ"},
+{code:"nz",name:"ニュージーランド"},
+{code:"ni",name:"ニカラグア"},
+{code:"ne",name:"ニジェール"},
+{code:"ng",name:"ナイジェリア"},
+{code:"kp",name:"北朝鮮"},
+{code:"mk",name:"北マケドニア"},
+{code:"no",name:"ノルウェー"},
+{code:"om",name:"オマーン"},
+{code:"pk",name:"パキスタン"},
+{code:"pw",name:"パラオ"},
+{code:"pa",name:"パナマ"},
+{code:"pg",name:"パプアニューギニア"},
+{code:"py",name:"パラグアイ"},
+{code:"pe",name:"ペルー"},
+{code:"ph",name:"フィリピン"},
+{code:"pl",name:"ポーランド"},
+{code:"pt",name:"ポルトガル"},
+{code:"qa",name:"カタール"},
+{code:"ro",name:"ルーマニア"},
+{code:"ru",name:"ロシア"},
+{code:"rw",name:"ルワンダ"},
+{code:"kn",name:"セントクリストファー・ネービス"},
+{code:"lc",name:"セントルシア"},
+{code:"vc",name:"セントビンセント及びグレナディーン諸島"},
+{code:"ws",name:"サモア"},
+{code:"sm",name:"サンマリノ"},
+{code:"st",name:"サントメ・プリンシペ"},
+{code:"sa",name:"サウジアラビア"},
+{code:"sn",name:"セネガル"},
+{code:"rs",name:"セルビア"},
+{code:"sc",name:"セーシェル"},
+{code:"sl",name:"シエラレオネ"},
+{code:"sg",name:"シンガポール"},
+{code:"sk",name:"スロバキア"},
+{code:"si",name:"スロベニア"},
+{code:"sb",name:"ソロモン諸島"},
+{code:"so",name:"ソマリア"},
+{code:"za",name:"南アフリカ"},
+{code:"ss",name:"南スーダン"},
+{code:"es",name:"スペイン"},
+{code:"lk",name:"スリランカ"},
+{code:"sd",name:"スーダン"},
+{code:"sr",name:"スリナム"},
+{code:"se",name:"スウェーデン"},
+{code:"ch",name:"スイス"},
+{code:"sy",name:"シリア"},
+{code:"tj",name:"タジキスタン"},
+{code:"tz",name:"タンザニア"},
+{code:"th",name:"タイ"},
+{code:"tl",name:"東ティモール"},
+{code:"tg",name:"トーゴ"},
+{code:"to",name:"トンガ"},
+{code:"tt",name:"トリニダード・トバゴ"},
+{code:"tn",name:"チュニジア"},
+{code:"tr",name:"トルコ"},
+{code:"tm",name:"トルクメニスタン"},
+{code:"tv",name:"ツバル"},
+{code:"ug",name:"ウガンダ"},
+{code:"ua",name:"ウクライナ"},
+{code:"ae",name:"アラブ首長国連邦"},
+{code:"gb",name:"イギリス"},
+{code:"us",name:"アメリカ"},
+{code:"uy",name:"ウルグアイ"},
+{code:"uz",name:"ウズベキスタン"},
+{code:"vu",name:"バヌアツ"},
+{code:"va",name:"バチカン"},
+{code:"ve",name:"ベネズエラ"},
+{code:"vn",name:"ベトナム"},
+{code:"ye",name:"イエメン"},
+{code:"zm",name:"ザンビア"},
+{code:"zw",name:"ジンバブエ"},
+
+{code:"br",name:"ブラジル"},
+{code:"ca",name:"カナダ"},
+{code:"cn",name:"中国"},
+{code:"fr",name:"フランス"},
+{code:"de",name:"ドイツ"},
+{code:"it",name:"イタリア"},
+{code:"jp",name:"日本"},
+{code:"kr",name:"韓国"},
+{code:"ps",name:"パレスチナ"},
+
+{code:"ck",name:"クック諸島"},
+{code:"tw",name:"台湾"},
+{code:"nu",name:"ニウエ"},
+{code:"hk",name:"香港"},
+{code:"mo",name:"マカオ"}
+
+
+
+]
+
+const level1=[
+"アメリカ","イギリス","インド","エジプト","オーストラリア","カナダ","韓国","ギリシャ","スペイン","中国","ドイツ","トルコ","日本","ブラジル","スイス"
+]
+
+const level2=[
+...level1,
+"イタリア","ロシア","アルゼンチン","イスラエル","ケニア","サウジアラビア","ジャマイカ","シンガポール","ネパール","バチカン","ブータン","メキシコ","ソマリア","タイ","南アフリカ"
+]
+
+const level3=[
+...level2,
+"インドネシア","カンボジア","北マケドニア","スリランカ","パナマ","パラオ","バングラデシュ","モンゴル","フランス","ベルギー","ポルトガル","マレーシア","ミャンマー","ベトナム","フィンランド"
+]
+
+const level4=[
+...level3,
+"ニュージーランド","アイスランド","イラン","ウルグアイ","オーストリア","オランダ","カタール","サンマリノ","タンザニア","チリ","ツバル","バーレーン","ペルー","ラオス","リビア"
+]
+
+const level5=[
+...level4,
+"セントクリストファー・ネービス",
+"セントビンセント及びグレナディーン諸島",
+"ボスニア・ヘルツェゴビナ",
+"エスワティニ",
+"ジョージア",
+"チュニジア",
+"ノルウェー",
+"クック諸島",
+"フィリピン",
+"ポーランド",
+"ミクロネシア",
+"グアテマラ",
+"デンマーク",
+"モロッコ",
+"レバノン",
+"ナミビア",
+"ドミニカ共和国",
+"チェコ",
+"クロアチア",
+"エチオピア",
+"ウズベキスタン",
+"イラク",
+"アルジェリア",
+"アイルランド",
+"モーリタニア",
+"マダガスカル",
+"ブルガリア",
+"パプアニューギニア",
+"パキスタン",
+"ドミニカ国",
+
+
+]
+
+let current
+let score=0
+let question=0
+let maxQuestion=0
+let questionList=[]
+let gameMode=""
+let startTime=0
+let timerInterval
+
+function shuffle(array){
+return array.sort(()=>Math.random()-0.5)
+}
+
+function getCountriesByNames(names){
+return countries.filter(c=>names.includes(c.name))
+}
+
+function startGame(mode){
+
+gameMode=mode
+score=0
+question=0
+
+startTime=Date.now()
+
+clearInterval(timerInterval)
+
+timerInterval=setInterval(updateTimer,100)
+
+let list
+
+if(mode==="all"){
+list=[...countries]
+}
+
+else if(mode==="10"){
+list=[...countries]
+maxQuestion=10
+}
+
+else if(mode==="lv1"){
+list=getCountriesByNames(level1)
+}
+
+else if(mode==="lv2"){
+list=getCountriesByNames(level2)
+}
+
+else if(mode==="lv3"){
+list=getCountriesByNames(level3)
+}
+
+else if(mode==="lv4"){
+list=getCountriesByNames(level4)
+}
+
+else if(mode==="lv5"){
+list=getCountriesByNames(level5)
+}
+
+questionList=shuffle(list)
+
+if(mode!=="10"){
+maxQuestion=questionList.length
+}
+
+document.getElementById("rankingTitle").textContent="ランキング"
+
+showRanking(mode)
+
+nextQuestion()
+
+}
+
+function updateTimer(){
+
+let time=(Date.now()-startTime)/1000
+
+document.getElementById("timer").textContent=
+time.toFixed(1)+" 秒"
+
+}
+
+function nextQuestion(){
+
+document.getElementById("result").textContent=""
+
+if(question>=maxQuestion){
+
+finishGame()
+return
+
+}
+
+let correct=questionList[question]
+
+current=correct
+
+question++
+
+document.getElementById("flag").src="flags/"+correct.code+".png"
+
+let pool=countries.filter(c=>c.code!==correct.code)
+
+shuffle(pool)
+
+let choices=[correct,pool[0],pool[1],pool[2]]
+
+choices=shuffle(choices)
+
+let html=""
+
+choices.forEach(c=>{
+html+=`<button onclick="answer('${c.name}')">${c.name}</button>`
+})
+
+document.getElementById("choices").innerHTML=html
+
+document.getElementById("score").textContent=
+"問題:"+question+" / "+maxQuestion+" 正解:"+score
+
+}
+
+function answer(name){
+
+if(name===current.name){
+
+score++
+document.getElementById("result").textContent="⭕ 正解！"
+
+}else{
+
+document.getElementById("result").textContent=
+"❌ 不正解 正解は "+current.name
+
+}
+
+setTimeout(nextQuestion,700)
+
+}
+
+function finishGame(){
+
+clearInterval(timerInterval)
+
+let time=(Date.now()-startTime)/1000
+
+document.getElementById("flag").src=""
+document.getElementById("choices").innerHTML=""
+
+document.getElementById("result").textContent=
+"終了！ "+score+" / "+maxQuestion+
+" タイム "+time.toFixed(1)+" 秒"
+
+saveRanking(score,time,gameMode)
+
+showRanking(gameMode)
+
+}
+
+function saveRanking(score,time,mode){
+
+let key="ranking_"+mode
+
+let name=prompt("名前を入力")
+
+let ranking=JSON.parse(localStorage.getItem(key)||"[]")
+
+ranking.push({name,score,time})
+
+ranking.sort((a,b)=>{
+
+if(b.score!==a.score){
+return b.score-a.score
+}
+
+return a.time-b.time
+
+})
+
+ranking=ranking.slice(0,10)
+
+localStorage.setItem(key,JSON.stringify(ranking))
+
+}
+
+function showRanking(mode){
+
+let key="ranking_"+mode
+
+let ranking=JSON.parse(localStorage.getItem(key)||"[]")
+
+let html=""
+
+ranking.forEach((r,i)=>{
+
+html+=(i+1)+"位 "+r.name+" "+r.score+"問 "+r.time.toFixed(1)+"秒<br>"
+
+})
+
+document.getElementById("ranking").innerHTML=html
+
+}
+
+function resetRanking(){
+
+if(confirm("ランキングをリセットしますか？")){
+
+localStorage.clear()
+
+showRanking(gameMode)
+
+}
+
+}
+
+let tCount=0
+
+document.addEventListener("keydown",function(e){
+
+if(e.key==="t"){
+
+tCount++
+
+if(tCount>=5){
+
+document.getElementById("teacher").style.display="block"
+
+}
+
+}else{
+
+tCount=0
+
+}
+
+})
+
+</script>
+
+</body>
+</html>
